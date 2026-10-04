@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Power Quiz - Ανακάλυψε τον Εγκέφαλό σου!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .quiz-card {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #4a3f7a;
+            font-size: 1.6rem;
+            margin: 0 0 10px 0;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background-color: #e9ecef;
+            height: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background-color: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4a5568;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .option-btn:hover:not([disabled]) {
+            background-color: #edf2f7;
+            border-color: #cbd5e0;
+            transform: translateY(-2px);
+        }
+
+        .option-btn.correct {
+            background-color: #c6f6d5 !important;
+            border-color: #38a169 !important;
+            color: #22543d !important;
+        }
+
+        .option-btn.wrong {
+            background-color: #fed7d7 !important;
+            border-color: #e53e3e !important;
+            color: #742a2a !important;
+        }
+
+        /* Feedback Box */
+        .feedback-box {
+            margin-top: 20px;
+            padding: 15px 18px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .feedback-box.show {
+            display: block;
+        }
+
+        .feedback-box.correct-fb {
+            background-color: #e6fffa;
+            border-left: 5px solid #319795;
+            color: #234e52;
+        }
+
+        .feedback-box.wrong-fb {
+            background-color: #fff5f5;
+            border-left: 5px solid #e53e3e;
+            color: #742a2a;
+        }
+
+        .action-btn {
+            margin-top: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            display: none;
+        }
+
+        .action-btn:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+        }
+
+        /* Results Screen */
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+
+        .result-score {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #4a3f7a;
+            margin: 15px 0;
+        }
+
+        .result-msg {
+            font-size: 1.1rem;
+            color: #4a5568;
+            margin-bottom: 25px;
+        }
+
+        .hide {
+            display: none !important;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-card">
+        <!-- Κύρια Περιοχή Quiz -->
+        <div id="quiz-screen">
+            <div class="header">
+                <h1>🧠 Brain Power Quiz</h1>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+            </div>
+
+            <div class="question-text" id="question-text">Ερώτηση...</div>
+
+            <div class="options-grid" id="options-container">
+                <!-- Τα κουμπιά επιλογών δημιουργούνται από JavaScript -->
+            </div>
+
+            <!-- Κουτί Άμεσης Ανατροφοδότησης -->
+            <div class="feedback-box" id="feedback-box"></div>
+
+            <button class="action-btn" id="next-btn">Επόμενη Ερώτηση ➔</button>
+        </div>
+
+        <!-- Οθόνη Αποτελεσμάτων -->
+        <div id="result-screen" class="result-screen">
+            <div class="result-icon" id="result-icon">🏆</div>
+            <h2>Ολοκλήρωσες το Quiz!</h2>
+            <div class="result-score" id="result-score">0 / 6</div>
+            <p class="result-msg" id="result-msg">Μπράβο!</p>
+            <button class="action-btn" id="restart-btn" style="display: block;">Παίξε Ξανά 🔄</button>
+        </div>
+    </div>
+
+    <script>
+        // Ερωτήσεις & Fun Facts για τον Εγκέφαλο
+        const questions = [
+            {
+                question: "1. Πόση από την συνολική ενέργεια του σώματός σου καταναλώνει ο εγκέφαλος;",
+                options: ["Περίπου 5%", "Περίπου 20%", "Περίπου 50%", "Περίπου 75%"],
+                correct: 1,
+                fact: "💡 **Fun Fact:** Παρόλο που ο εγκέφαλος ζυγίζει μόνο το 2% του συνολικού βάρους σου, καταναλώνει το 20% της ενέργειας και του οξυγόνου που χρειάζεσαι κάθε μέρα!"
+            },
+            {
+                question: "2. Πόση ηλεκτρική ισχύ παράγει ο εγκέφαλός σου όταν είσαι ξύπνιος;",
+                options: [
+                    "Αρκετή για να φορτίσει ένα αυτοκίνητο",
+                    "Αρκετή για να ανάψει μια μικρή λάμπα LED (10-23 Watts)",
+                    "Μηδενική ηλεκτρική ισχύ",
+                    "Αρκετή για να λειτουργήσει μια τηλεόραση"
+                ],
+                correct: 1,
+                fact: "⚡ **Fun Fact:** Ο εγκέφαλός σου παράγει αρκετό ηλεκτρισμό για να ανάψει μια χαμηλής κατανάλωσης λάμπα LED!"
+            },
+            {
+                question: "3. Τι ποσοστό του εγκεφάλου σου χρησιμοποιείς πραγματικά;",
+                options: ["Μόνο το 10%", "Περίπου το 50%", "Το 100%", "Εξαρτάται αν διαβάζεις"],
+                correct: 2,
+                fact: "Myth Busted! 🚫 Ο ισχυρισμός ότι χρησιμοποιούμε μόνο το 10% είναι μύθος των ταινιών! Χρησιμοποιούμε το 100% του εγκεφάλου μας — ακόμα και όταν κοιμόμαστε, διάφορες περιοχές παραμένουν ενεργές."
+            },
+            {
+                question: "4. Πόσο γρήγορα μπορούν να ταξιδέψουν τα νευρικά σήματα στον εγκέφαλο;",
+                options: ["10 χλμ/ώρα", "100 χλμ/ώρα", "Έως 400 χλμ/ώρα", "Με την ταχύτητα του φωτός"],
+                correct: 2,
+                fact: "🏎️ **Fun Fact:** Τα νευρικά σήματα τρέχουν με ταχύτητες έως 400 χλμ/ώρα! Αυτό είναι πιο γρήγορο από ένα μονοθέσιο της Formula 1!"
+            },
+            {
+                question: "5. Από τι ποσοστό νερού αποτελείται ο ανθρώπινος εγκέφαλος;",
+                options: ["Περίπου 25%", "Περίπου 50%", "Περίπου 75%", "Περίπου 95%"],
+                correct: 2,
+                fact: "💧 **Fun Fact:** Ο εγκέφαλός σου αποτελείται από περίπου 75% νερό! Γι' αυτό, όταν δεν πίνεις αρκετό νερό (αφυδάτωση), νιώθεις αμέσως πονοκέφαλο και δυσκολία συγκέντρωσης."
+            },
+            {
+                question: "6. Τι συμβαίνει στη δομή του εγκεφάλου σου κάθε φορά που μαθαίνεις κάτι καινούργιο;",
+                options: [
+                    "Δεν αλλάζει απολύτως τίποτα",
+                    "Δημιουργούνται νέες συνδέσεις μεταξύ των νευρώνων",
+                    "Ο εγκέφαλος μεγαλώνει σε φυσικό μέγεθος",
+                    "Χάνεις παλιές αναμνήσεις για να ελευθερωθεί χώρος"
+                ],
+                correct: 1,
+                fact: "🧠 **Fun Fact:** Αυτό ονομάζεται **Νευροπλαστικότητα**! Κάθε φορά που μαθαίνεις μια νέα δεξιότητα ή πληροφορία, ο εγκέφαλός σου αλλάζει φυσικά και δημιουργεί νέα «μονοπάτια» συνδέσεων!"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        // Elements
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackBox = document.getElementById('feedback-box');
+        const nextBtn = document.getElementById('next-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const restartBtn = document.getElementById('restart-btn');
+
+        startQuiz();
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            resultScreen.style.display = 'none';
+            quizScreen.style.display = 'block';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            resetState();
+            const q = questions[currentQuestionIndex];
+            
+            // Ενημέρωση Progress Bar
+            const progressPercent = ((currentQuestionIndex) / questions.length) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+
+            questionText.innerText = q.question;
+
+            q.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.classList.add('option-btn');
+                btn.innerText = option;
+                btn.addEventListener('click', () => selectAnswer(index));
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function resetState() {
+            nextBtn.style.display = 'none';
+            feedbackBox.className = 'feedback-box';
+            feedbackBox.style.display = 'none';
+            optionsContainer.innerHTML = '';
+        }
+
+        function selectAnswer(selectedIndex) {
+            const q = questions[currentQuestionIndex];
+            const buttons = optionsContainer.children;
+
+            // Απενεργοποίηση όλων των κουμπιών
+            for (let btn of buttons) {
+                btn.disabled = true;
+            }
+
+            // Έλεγχος σωστής/λανθασμένης απάντησης
+            if (selectedIndex === q.correct) {
+                buttons[selectedIndex].classList.add('correct');
+                buttons[selectedIndex].innerHTML += ' <span>✅</span>';
+                score++;
+                feedbackBox.classList.add('correct-fb');
+                feedbackBox.innerHTML = `<strong>Σωστά! 🎉</strong><br>${q.fact}`;
+            } else {
+                buttons[selectedIndex].classList.add('wrong');
+                buttons[selectedIndex].innerHTML += ' <span>❌</span>';
+                buttons[q.correct].classList.add('correct');
+                buttons[q.correct].innerHTML += ' <span>✅</span>';
+                feedbackBox.classList.add('wrong-fb');
+                feedbackBox.innerHTML = `<strong>Λάθος! 😅</strong><br>${q.fact}`;
+            }
+
+            feedbackBox.style.display = 'block';
+
+            if (currentQuestionIndex < questions.length - 1) {
+                nextBtn.innerText = "Επόμενη Ερώτηση ➔";
+            } else {
+                nextBtn.innerText = "Δες τα Αποτελέσματα 🏆";
+            }
+            nextBtn.style.display = 'block';
+        }
+
+        nextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        });
+
+        function showResults() {
+            quizScreen.style.display = 'none';
+            resultScreen.style.display = 'block';
+            
+            document.getElementById('result-score').innerText = `${score} /${questions.length}`;
+
+            const resultIcon = document.getElementById('result-icon');
+            const resultMsg = document.getElementById('result-msg');
+
+            if (score === questions.length) {
+                resultIcon.innerText = "🧠⚡";
+                resultMsg.innerText = "Απίστευτο! Είσαι ένας αληθινός Master του Εγκεφάλου!";
+            } else if (score >= 4) {
+                resultIcon.innerText = "🌟";
+                resultMsg.innerText = "Πολύ καλό σκορ! Γνωρίζεις πολλά για το πώς λειτουργεί το μυαλό σου!";
+            } else {
+                resultIcon.innerText = "💡";
+                resultMsg.innerText = "Καλή προσπάθεια! Τώρα έμαθες πολλά νέα και εντυπωσιακά facts!";
+            }
+        }
+
+        restartBtn.addEventListener('click', startQuiz);
+    </script>
+</body>
+</html>
